@@ -10,7 +10,7 @@ class ClipFeatureExtractor:
     def __init__(self, framerate=1/2, size=224, centercrop=True, model_name_or_path="ViT-B/32", device="cuda"):
         self.video_loader = VideoLoader(framerate=framerate, size=size, centercrop=centercrop)
         print("Loading CLIP models")
-        self.clip_extractor, _ = clip.load(model_name_or_path, device=device, jit=False)
+        self.clip_extractor, _ = clip.load(model_name_or_path, device=device, jit=True)
         self.tokenizer = clip.tokenize
         self.video_preprocessor = Preprocessing()
         self.device = device
