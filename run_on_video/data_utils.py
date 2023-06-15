@@ -87,7 +87,7 @@ class Preprocessing(object):
 
     def __call__(self, tensor):
         print(tensor)
-        tensor = tensor.get("video") / 255.0
+        tensor = tensor / 255.0
         tensor = self.norm(tensor)
         return tensor
 
