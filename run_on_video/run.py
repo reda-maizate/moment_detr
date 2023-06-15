@@ -103,7 +103,7 @@ def run_example():
     moment_detr_predictor = MomentDETRPredictor(
         ckpt_path=ckpt_path,
         clip_model_name_or_path=clip_model_name_or_path,
-        device="cuda"
+        device="cpu"
     )
     print("Run prediction...")
     predictions = moment_detr_predictor.localize_moment(
@@ -114,10 +114,10 @@ def run_example():
         print("-"*30 + f"idx{idx}")
         print(f">> query: {query_data['query']}")
         print(f">> video_path: {video_path}")
-        print(f">> GT moments: {query_data['relevant_windows']}")
+        # print(f">> GT moments: {query_data['relevant_windows']}")
         print(f">> Predicted moments ([start_in_seconds, end_in_seconds, score]): "
               f"{predictions[idx]['pred_relevant_windows']}")
-        print(f">> GT saliency scores (only localized 2-sec clips): {query_data['saliency_scores']}")
+        # print(f">> GT saliency scores (only localized 2-sec clips): {query_data['saliency_scores']}")
         print(f">> Predicted saliency scores (for all 2-sec clip): "
               f"{predictions[idx]['pred_saliency_scores']}")
 
