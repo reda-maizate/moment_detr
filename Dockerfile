@@ -10,4 +10,4 @@ RUN apt-get update && apt-get install git
 
 #WORKDIR moment_detr/
 #ENTRYPOINT ["tail", "-f", "/dev/null"]
-ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "moment_env", "python", "run_on_video/run_on_aws.py"]
+ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "moment_env", "python", "moment_detr/run_on_video/run_on_aws.py"]
