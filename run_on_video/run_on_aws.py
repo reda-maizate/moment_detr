@@ -15,9 +15,9 @@ import logging
 import redis
 from rediscluster import RedisCluster
 
-AWS_REGION = os.environ.get('AWS_REGION', 'us-east-1')
+AWS_REGION = os.environ.get('AWS_REGION')
 REDIS_HOST = os.environ.get('REDIS_HOST')
-REDIS_PORT = os.environ.get('REDIS_PORT', 6379)
+REDIS_PORT = os.environ.get('REDIS_PORT')
 REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD')
 REDIS_USERNAME = os.environ.get('REDIS_USERNAME')
 SQS_QUEUE_NAME = os.environ.get('SQS_QUEUE_NAME')
