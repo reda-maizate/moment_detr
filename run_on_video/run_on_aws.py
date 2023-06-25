@@ -189,7 +189,7 @@ def main():
 
                 # TODO #2: Run inference
                 print("Running inference...")
-                run_example()
+                res = run_example()
                 print("Inference done")
                 # TODO #5: Delete videos from S3 bucket and local storage
                 try:
@@ -236,15 +236,15 @@ def main():
                 key = f'project_id:{counter}'
                 redis_cluster.delete(key)
 
-                d = {"query": "test", "result": "test"}
-                for k, v in d.items():
+                # d = {"query": "test", "result": "test"}
+                for k, v in res.items():
                     redis_cluster.hset(key, k, v)
                 # redis_cluster.hset('foo', mapping={"query": "test", "result": "test"})
                 print("Pushed data to Redis")
                 logger.info("Pushed data to Redis")
                 # Get the list of elements in the key 'foo'
 
-                values_from_my_key = redis_cluster.hgetall('foo')
+                values_from_my_key = redis_cluster.hgetall(key)
                 for k, v in values_from_my_key.items():
                     print(k, v)
                     logger.info(k, v)
