@@ -142,7 +142,7 @@ def main():
     sqs = boto3.resource('sqs', region_name=AWS_REGION)
 
     # Get the queue
-    queue = sqs.get_queue_name(QueueName=SQS_QUEUE_NAME)
+    queue = sqs.get_queue_by_name(QueueName=SQS_QUEUE_NAME)
 
     # Process messages by printing out body and optional author name
     timeout = time.time() + 60 * 3
