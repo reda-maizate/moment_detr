@@ -106,20 +106,20 @@ def main():
     logger.info('Starting...')
 
     # SQS Environment Variables
-    AWS_REGION = os.environ.get('AWS_REGION', 'us-east-1')
-    # print(f'AWS region: {AWS_REGION}')
-    SQS_QUEUE_NAME = os.environ.get('SQS_QUEUE_NAME')
-    # print(f'SQS queue name: {SQS_QUEUE_NAME}')
+    # AWS_REGION = os.environ.get('AWS_REGION', 'us-east-1')
+    print(f'AWS region: {AWS_REGION}')
+    # SQS_QUEUE_NAME = os.environ.get('SQS_QUEUE_NAME')
+    print(f'SQS queue name: {SQS_QUEUE_NAME}')
 
     # Redis Environment Variables
-    REDIS_HOST = os.environ.get('REDIS_HOST')
-    # print(f'Redis host: {REDIS_HOST}')
-    REDIS_PORT = os.environ.get('REDIS_PORT', 6379)
-    # print(f'Redis port: {REDIS_PORT}')
-    REDIS_USERNAME = os.environ.get('REDIS_USERNAME', "")
-    # print(f'Redis username: {REDIS_USERNAME}')
-    REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD', "")
-    # print(f'Redis password: {REDIS_PASSWORD}')
+    # REDIS_HOST = os.environ.get('REDIS_HOST')
+    print(f'Redis host: {REDIS_HOST}')
+    # REDIS_PORT = os.environ.get('REDIS_PORT', 6379)
+    print(f'Redis port: {REDIS_PORT}')
+    # REDIS_USERNAME = os.environ.get('REDIS_USERNAME', "")
+    print(f'Redis username: {REDIS_USERNAME}')
+    # REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD', "")
+    print(f'Redis password: {REDIS_PASSWORD}')
 
     # Get the service resource
     sqs = boto3.resource('sqs', region_name=AWS_REGION, aws_access_key_id=ACCESS_ID, aws_secret_access_key=ACCESS_KEY)
