@@ -122,7 +122,10 @@ def main():
     print(f'Redis password: {REDIS_PASSWORD}')
 
     # Get the service resource
-    sqs = boto3.resource('sqs', region_name=AWS_REGION, aws_access_key_id=ACCESS_ID, aws_secret_access_key=ACCESS_KEY)
+    session = boto3.session.Session(aws_access_key_id=ACCESS_ID, aws_secret_access_key=ACCESS_KEY,
+                                    region_name=AWS_REGION)
+    sqs = session.client('sqs')
+    # sqs = boto3.resource('sqs', region_name=AWS_REGION, aws_access_key_id=ACCESS_ID, aws_secret_access_key=ACCESS_KEY)
 
     # Get the queue
     queue = sqs.get_queue_by_name(QueueName=SQS_QUEUE_NAME, QueueOwnerAWSAccountId=AWS_QUEUE_OWNER_ID)
