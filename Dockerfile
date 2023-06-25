@@ -29,10 +29,10 @@ ENV REDIS_HOST=${REDIS_HOST}
 ENV REDIS_PORT=${REDIS_PORT}
 ENV REDIS_USERNAME=${REDIS_USERNAME}
 ENV REDIS_PASSWORD=${REDIS_PASSWORD}
-ENV ACCES_ID=${ACCES_ID}
+ENV ACCESS_ID=${ACCESS_ID}
 ENV ACCESS_KEY=${ACCESS_KEY}
 ENV AWS_QUEUE_OWNER_ID=${AWS_QUEUE_OWNER_ID}
 
-RUN aws configure set aws_access_key_id ${ACCES_ID} && aws configure set aws_secret_access_key ${ACCESS_KEY} && aws configure set default.region ${AWS_REGION}
+RUN aws configure set aws_access_key_id ${ACCESS_ID} && aws configure set aws_secret_access_key ${ACCESS_KEY} && aws configure set default.region ${AWS_REGION}
 
 ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "moment_env", "python", "moment_detr/run_on_video/run_on_aws.py"]
