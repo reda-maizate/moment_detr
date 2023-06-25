@@ -192,13 +192,13 @@ def main():
                 run_example()
                 print("Inference done")
                 # TODO #5: Delete videos from S3 bucket and local storage
-                try:
-                    os.remove(file_name)
-                except Exception as e:
-                    print("Error during local deletion")
-                    logger.error("Error during local deletion")
-                    print(e)
-                    logger.error(e)
+                # try:
+                #     os.remove(file_name)
+                # except Exception as e:
+                #     print("Error during local deletion")
+                #     logger.error("Error during local deletion")
+                #     print(e)
+                #     logger.error(e)
 
                 try:
                     s3_client.delete_object(Bucket=bucket_name, Key=object_key)
