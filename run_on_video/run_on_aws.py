@@ -23,6 +23,7 @@ REDIS_USERNAME = os.environ.get('REDIS_USERNAME')
 SQS_QUEUE_NAME = os.environ.get('SQS_QUEUE_NAME')
 ACCESS_ID = os.environ.get('ACCESS_ID')
 ACCESS_KEY = os.environ.get('ACCESS_KEY')
+AWS_QUEUE_OWNER_ID = os.environ.get('AWS_QUEUE_OWNER_ID')
 
 
 class MomentDETRPredictor:
@@ -124,7 +125,7 @@ def main():
     sqs = boto3.resource('sqs', region_name=AWS_REGION, aws_access_key_id=ACCESS_ID, aws_secret_access_key=ACCESS_KEY)
 
     # Get the queue
-    queue = sqs.get_queue_by_name(QueueName=SQS_QUEUE_NAME)
+    queue = sqs.get_queue_by_name(QueueName=SQS_QUEUE_NAME, QueueOwnerAWSAccountId=AWS_QUEUE_OWNER_ID)
 
     # Process messages by printing out body and optional author name
     timeout = time.time() + 60 * 3
