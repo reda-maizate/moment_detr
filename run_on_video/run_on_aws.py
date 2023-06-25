@@ -122,27 +122,27 @@ def main():
     print(f'Redis password: {REDIS_PASSWORD}')
 
     # AWS Credentials
-    role_info = {
-        'RoleArn': 'arn:aws:iam::406222022685:role/admin-access',
-        'RoleSessionName': 'current_session'
-    }
-    print(f'Access ID: {ACCESS_ID}')
-    print(f'Access Key: {ACCESS_KEY}')
-    sts_client = boto3.client('sts', region_name=AWS_REGION, aws_access_key_id=ACCESS_ID, aws_secret_access_key=ACCESS_KEY)
-    assumed_role_object = sts_client.assume_role(**role_info)
+    # role_info = {
+    #     'RoleArn': 'arn:aws:iam::406222022685:role/admin-access',
+    #     'RoleSessionName': 'current_session'
+    # }
+    # print(f'Access ID: {ACCESS_ID}')
+    # print(f'Access Key: {ACCESS_KEY}')
+    # sts_client = boto3.client('sts', region_name=AWS_REGION, aws_access_key_id=ACCESS_ID, aws_secret_access_key=ACCESS_KEY)
+    # assumed_role_object = sts_client.assume_role(**role_info)
 
-    ACCESS_ID_2 = assumed_role_object['Credentials']['AccessKeyId']
-    ACCESS_KEY_2 = assumed_role_object['Credentials']['SecretAccessKey']
-    SESSION_TOKEN = assumed_role_object['Credentials']['SessionToken']
+    # ACCESS_ID_2 = assumed_role_object['Credentials']['AccessKeyId']
+    # ACCESS_KEY_2 = assumed_role_object['Credentials']['SecretAccessKey']
+    # SESSION_TOKEN = assumed_role_object['Credentials']['SessionToken']
     # Get the service resource
-    session = boto3.session.Session(aws_access_key_id=ACCESS_ID_2, aws_secret_access_key=ACCESS_KEY_2,
-                                    aws_session_token=SESSION_TOKEN)
+    # session = boto3.session.Session(aws_access_key_id=ACCESS_ID_2, aws_secret_access_key=ACCESS_KEY_2,
+    #                                 aws_session_token=SESSION_TOKEN)
 
-    sqs = session.client('sqs', region_name=AWS_REGION, aws_access_key_id=ACCESS_ID_2, aws_secret_access_key=ACCESS_KEY_2)
-    # sqs = boto3.resource('sqs', region_name=AWS_REGION, aws_access_key_id=ACCESS_ID, aws_secret_access_key=ACCESS_KEY)
+    # sqs = session.client('sqs', region_name=AWS_REGION, aws_access_key_id=ACCESS_ID_2, aws_secret_access_key=ACCESS_KEY_2)
+    sqs = boto3.resource('sqs', region_name=AWS_REGION)
 
     # Get the queue
-    queue = sqs.get_queue_url(QueueName=SQS_QUEUE_NAME)
+    queue = sqs.get_queue_name(QueueName=SQS_QUEUE_NAME)
 
     # Process messages by printing out body and optional author name
     timeout = time.time() + 60 * 3
