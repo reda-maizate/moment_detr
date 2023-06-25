@@ -6,7 +6,7 @@ RUN conda env create -f environment.yml
 SHELL ["conda", "run", "-n", "moment_env", "/bin/bash", "-c"]
 
 RUN apt-get update && apt-get install git
-#RUN git clone https://github.com/reda-maizate/moment_detr.git
+RUN git clone https://github.com/reda-maizate/moment_detr.git
 
 #WORKDIR moment_detr/
 #ENTRYPOINT ["tail", "-f", "/dev/null"]
