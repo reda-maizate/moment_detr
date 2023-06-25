@@ -145,11 +145,11 @@ def main():
     queue = sqs.get_queue_by_name(QueueName=SQS_QUEUE_NAME)
 
     # Process messages by printing out body and optional author name
-    timeout = time.time() + 60 * 3
+    # timeout = time.time() + 60 * 3
 
     while True:
-        if time.time() > timeout:
-            break
+        # if time.time() > timeout:
+        #     break
         try:
             messages = queue.receive_messages(MessageAttributeNames=['All'], MaxNumberOfMessages=1, WaitTimeSeconds=5)
             counter = 0
@@ -188,7 +188,9 @@ def main():
                 # logger.info(f'Local files: {os.listdir()}')
 
                 # TODO #2: Run inference
-
+                print("Running inference...")
+                run_example()
+                print("Inference done")
                 # TODO #5: Delete videos from S3 bucket and local storage
                 try:
                     os.remove(file_name)
