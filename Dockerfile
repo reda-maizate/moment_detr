@@ -5,7 +5,7 @@ RUN conda env create -f environment.yml
 
 SHELL ["conda", "run", "-n", "moment_env", "/bin/bash", "-c"]
 
-RUN apt-get update && apt-get install git && apt-get install awscli
+RUN apt-get update && apt-get install git && apt-get install awscli -y
 RUN git clone https://github.com/reda-maizate/moment_detr.git
 
 #WORKDIR moment_detr/
