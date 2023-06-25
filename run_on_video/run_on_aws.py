@@ -126,7 +126,9 @@ def main():
         'RoleArn': 'arn:aws:iam::406222022685:role/admin-access',
         'RoleSessionName': 'current_session'
     }
-    sts_client = boto3.client('sts')
+    print(f'Access ID: {ACCESS_ID}')
+    print(f'Access Key: {ACCESS_KEY}')
+    sts_client = boto3.client('sts', region_name=AWS_REGION, aws_access_key_id=ACCESS_ID, aws_secret_access_key=ACCESS_KEY)
     assumed_role_object = sts_client.assume_role(**role_info)
 
     ACCESS_ID = assumed_role_object['Credentials']['AccessKeyId']
