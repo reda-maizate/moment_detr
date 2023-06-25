@@ -15,6 +15,13 @@ import logging
 import redis
 from rediscluster import RedisCluster
 
+AWS_REGION = os.environ.get('AWS_REGION', 'us-east-1')
+REDIS_HOST = os.environ.get('REDIS_HOST')
+REDIS_PORT = os.environ.get('REDIS_PORT', 6379)
+REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD')
+REDIS_USERNAME = os.environ.get('REDIS_USERNAME')
+SQS_QUEUE_NAME = os.environ.get('SQS_QUEUE_NAME')
+
 
 class MomentDETRPredictor:
     def __init__(self, ckpt_path, clip_model_name_or_path="ViT-B/32", device="cuda"):
