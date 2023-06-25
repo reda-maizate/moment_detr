@@ -21,6 +21,8 @@ REDIS_PORT = os.environ.get('REDIS_PORT', 6379)
 REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD')
 REDIS_USERNAME = os.environ.get('REDIS_USERNAME')
 SQS_QUEUE_NAME = os.environ.get('SQS_QUEUE_NAME')
+ACCESS_ID = os.environ.get('ACCESS_ID')
+ACCESS_KEY = os.environ.get('ACCESS_KEY')
 
 
 class MomentDETRPredictor:
@@ -29,7 +31,7 @@ class MomentDETRPredictor:
         self.device = device
         print("Loading feature extractors...")
         self.feature_extractor = ClipFeatureExtractor(framerate=1 / self.clip_len, size=224, centercrop=True,
-            model_name_or_path=clip_model_name_or_path, device=device)
+                                                      model_name_or_path=clip_model_name_or_path, device=device)
         print("Loading trained Moment-DETR model...")
         self.model = build_inference_model(ckpt_path).to(self.device)
 
@@ -56,7 +58,7 @@ class MomentDETRPredictor:
         video_mask = torch.ones(n_query, n_frames).to(self.device)
         query_feats = self.feature_extractor.encode_text(query_list)  # #text * (L, d)
         query_feats, query_mask = pad_sequences_1d(query_feats, dtype=torch.float32, device=self.device,
-            fixed_length=None)
+                                                   fixed_length=None)
         query_feats = F.normalize(query_feats, dim=-1, eps=1e-5)
         model_inputs = dict(src_vid=video_feats, src_vid_mask=video_mask, src_txt=query_feats, src_txt_mask=query_mask)
 
@@ -84,9 +86,11 @@ class MomentDETRPredictor:
             cur_ranked_preds = sorted(cur_ranked_preds, key=lambda x: x[2], reverse=True)
             cur_ranked_preds = [[float(f"{e:.4f}") for e in row] for row in cur_ranked_preds]
             cur_query_pred = dict(query=query_list[idx],  # str
-                vid=video_path, pred_relevant_windows=cur_ranked_preds,  # List([st(float), ed(float), score(float)])
-                pred_saliency_scores=saliency_scores[idx]  # List(float), len==n_frames, scores for each frame
-            )
+                                  vid=video_path, pred_relevant_windows=cur_ranked_preds,
+                                  # List([st(float), ed(float), score(float)])
+                                  pred_saliency_scores=saliency_scores[idx]
+                                  # List(float), len==n_frames, scores for each frame
+                                  )
             predictions.append(cur_query_pred)
 
         return predictions
@@ -117,7 +121,7 @@ def main():
     # print(f'Redis password: {REDIS_PASSWORD}')
 
     # Get the service resource
-    sqs = boto3.resource('sqs', region_name=AWS_REGION)
+    sqs = boto3.resource('sqs', region_name=AWS_REGION, aws_access_key_id=ACCESS_ID, aws_secret_access_key=ACCESS_KEY)
 
     # Get the queue
     queue = sqs.get_queue_by_name(QueueName=SQS_QUEUE_NAME)
@@ -148,7 +152,8 @@ def main():
                 message.delete()
 
                 # TODO #1: Download videos from S3 bucket to local storage
-                s3_client = boto3.client('s3', region_name=AWS_REGION)
+                s3_client = boto3.client('s3', region_name=AWS_REGION, aws_access_key_id=ACCESS_ID,
+                                         aws_secret_access_key=ACCESS_KEY)
                 file_name = object_key.split('/')[-1]
 
                 try:
@@ -250,7 +255,7 @@ def run_example():
     clip_model_name_or_path = "ViT-B/32"
     # clip_model_name_or_path = "tmp/ViT-B-32.pt"
     moment_detr_predictor = MomentDETRPredictor(ckpt_path=ckpt_path, clip_model_name_or_path=clip_model_name_or_path,
-        device="cpu")
+                                                device="cpu")
     print("Run prediction...")
     predictions = moment_detr_predictor.localize_moment(video_path=video_path, query_list=query_text_list)
 
