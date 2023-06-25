@@ -124,7 +124,7 @@ def main():
     # Get the service resource
     session = boto3.session.Session(aws_access_key_id=ACCESS_ID, aws_secret_access_key=ACCESS_KEY,
                                     region_name=AWS_REGION)
-    sqs = session.client('sqs')
+    sqs = session.client('sqs', region_name=AWS_REGION, aws_access_key_id=ACCESS_ID, aws_secret_access_key=ACCESS_KEY)
     # sqs = boto3.resource('sqs', region_name=AWS_REGION, aws_access_key_id=ACCESS_ID, aws_secret_access_key=ACCESS_KEY)
 
     # Get the queue
