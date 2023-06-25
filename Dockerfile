@@ -6,6 +6,8 @@ RUN conda env create -f environment.yml
 SHELL ["conda", "run", "-n", "moment_env", "/bin/bash", "-c"]
 
 RUN apt-get update && apt-get install git && apt-get install awscli -y
+
+ADD "https://www.random.org/cgi-bin/randbyte?nbytes=10&format=h" skipcache
 RUN git clone https://github.com/reda-maizate/moment_detr.git
 
 #WORKDIR moment_detr/
