@@ -121,9 +121,21 @@ def main():
     # REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD', "")
     print(f'Redis password: {REDIS_PASSWORD}')
 
+    # AWS Credentials
+    role_info = {
+        'RoleArn': 'arn:aws:iam::406222022685:role/admin-access',
+        'RoleSessionName': 'current_session'
+    }
+    sts_client = boto3.client('sts')
+    assumed_role_object = sts_client.assume_role(**role_info)
+
+    ACCESS_ID = assumed_role_object['Credentials']['AccessKeyId']
+    ACCESS_KEY = assumed_role_object['Credentials']['SecretAccessKey']
+    SESSION_TOKEN = assumed_role_object['Credentials']['SessionToken']
     # Get the service resource
     session = boto3.session.Session(aws_access_key_id=ACCESS_ID, aws_secret_access_key=ACCESS_KEY,
-                                    region_name=AWS_REGION)
+                                    aws_session_token=SESSION_TOKEN)
+
     sqs = session.client('sqs', region_name=AWS_REGION, aws_access_key_id=ACCESS_ID, aws_secret_access_key=ACCESS_KEY)
     # sqs = boto3.resource('sqs', region_name=AWS_REGION, aws_access_key_id=ACCESS_ID, aws_secret_access_key=ACCESS_KEY)
 
