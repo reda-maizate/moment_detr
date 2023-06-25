@@ -192,13 +192,13 @@ def main():
                 run_example()
                 print("Inference done")
                 # TODO #5: Delete videos from S3 bucket and local storage
-                # try:
-                #     os.remove(file_name)
-                # except Exception as e:
-                #     print("Error during local deletion")
-                #     logger.error("Error during local deletion")
-                #     print(e)
-                #     logger.error(e)
+                try:
+                    os.remove(file_name)
+                except Exception as e:
+                    print("Error during local deletion")
+                    logger.error("Error during local deletion")
+                    print(e)
+                    logger.error(e)
 
                 try:
                     s3_client.delete_object(Bucket=bucket_name, Key=object_key)
@@ -279,17 +279,29 @@ def run_example():
     print("Run prediction...")
     predictions = moment_detr_predictor.localize_moment(video_path=video_path, query_list=query_text_list)
 
+    res = dict()
+    # res[f"{project_id}"] = {}
+    # res[f"{project_id}"]["video_path"] = video_path
+    # res[f"{project_id}"]["query_list"] = query_text_list
+    # res[f"{project_id}"]["predictions"] = predictions
+
     # print data
     for idx, query_data in enumerate(queries):
-        print("-" * 30 + f"idx{idx}")
-        print(f">> query: {query_data['query']}")
-        print(f">> video_path: {video_path}")
+        # print("-" * 30 + f"idx{idx}")
+        # print(f">> query: {query_data['query']}")
+        # print(f">> video_path: {video_path}")
         # print(f">> GT moments: {query_data['relevant_windows']}")
-        print(f">> Predicted moments ([start_in_seconds, end_in_seconds, score]): "
-              f"{predictions[idx]['pred_relevant_windows']}")
+        # print(f">> Predicted moments ([start_in_seconds, end_in_seconds, score]): "
+        #       f"{predictions[idx]['pred_relevant_windows']}")
         # print(f">> GT saliency scores (only localized 2-sec clips): {query_data['saliency_scores']}")
-        print(f">> Predicted saliency scores (for all 2-sec clip): "
-              f"{predictions[idx]['pred_saliency_scores']}")
+        # print(f">> Predicted saliency scores (for all 2-sec clip): "
+        #       f"{predictions[idx]['pred_saliency_scores']}")
+        res["project_id"][f"{video_path}"][f"{query_data['query']}"] = {
+            "pred_moments": predictions[idx]['pred_relevant_windows'],
+            "pred_saliency_scores": predictions[idx]['pred_saliency_scores']
+        }
+    print(res)
+    return res
 
 
 if __name__ == "__main__":
