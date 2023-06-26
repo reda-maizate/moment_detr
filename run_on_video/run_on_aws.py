@@ -4,6 +4,9 @@ from run_on_video.data_utils import ClipFeatureExtractor
 from run_on_video.model_utils import build_inference_model
 from utils.tensor_utils import pad_sequences_1d
 from moment_detr.span_utils import span_cxw_to_xx
+import warnings
+warnings.filterwarnings('ignore')
+
 from utils.basic_utils import l2_normalize_np_array
 import torch.nn.functional as F
 import numpy as np
@@ -154,7 +157,7 @@ def main():
                 delete_video_in_bucket_and_locally(s3_client, bucket_name, object_key, file_name)
 
                 #4: Push data to AWS MemoryDB (Redis) instance
-                connect_and_push_to_redis(res, project_id, REDIS_HOST, REDIS_PORT, REDIS_USERNAME, REDIS_PASSWORD)
+                connect_and_push_to_redis(res, REDIS_HOST, REDIS_PORT, REDIS_USERNAME, REDIS_PASSWORD)
                 print("------------------------------------")
 
         except Exception as e:
@@ -183,7 +186,7 @@ def run_inference(project_id, file_name):
 
 
     # run predictions
-    print("Build models...")
+    # print("Build models...")
     clip_model_name_or_path = "ViT-B/32"
     # clip_model_name_or_path = "tmp/ViT-B-32.pt"
     moment_detr_predictor = MomentDETRPredictor(ckpt_path=ckpt_path, clip_model_name_or_path=clip_model_name_or_path,
@@ -248,35 +251,17 @@ def delete_video_in_bucket_and_locally(s3_client, bucket_name, object_key, file_
     print(f'Deleted {object_key} from {bucket_name} and {file_name}')
 
 
-def connect_and_push_to_redis(res, project_id, host, port, username, password):
-    # logger.info("REDIS_HOST: " + REDIS_HOST)
-    # print("REDIS_HOST: ", REDIS_HOST)
-    # logger.info("REDIS_PORT: " + REDIS_PORT)
-    # print("REDIS_PORT: ", REDIS_PORT)
-    # logger.info("REDIS_USERNAME: " + REDIS_USERNAME)
-    # print("REDIS_USERNAME: ", REDIS_USERNAME)
-    # logger.info("REDIS_PASSWORD: " + REDIS_PASSWORD)
-    # print("REDIS_PASSWORD: ", REDIS_PASSWORD)
-
+def connect_and_push_to_redis(res, host, port, username, password):
     redis_cluster = RedisCluster(host=host, port=port, username=username,
                                  password=password, decode_responses=True,
                                  skip_full_coverage_check=True, ssl=True)
-    # TODO: Test avec RedisCluster bg
+
     if redis_cluster.ping():
         print('Connected to Redis')
     else:
         print('Could not connect to Redis')
 
-    # TODO #4: Push data to AWS ElastiCache (Redis) cluster
-    # redis_cluster.delete(key)
-
-    # d = {"query": "test", "result": "test"}
-    # print(res)
-    # key = res.keys()[0]
-    # print("key:", key)
-
-    # value = str(res[key])
-    # print("value:", value)
+    #4: Push data to AWS ElastiCache (Redis) cluster
     for k, v in res.items():
         redis_cluster.delete(k)
         redis_cluster.set(k, str(v))
