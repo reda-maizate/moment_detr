@@ -136,7 +136,7 @@ def main():
             messages = queue.receive_messages(MessageAttributeNames=['All'], MaxNumberOfMessages=1, WaitTimeSeconds=5)
             counter = 0
             for message in messages:
-                bucket_name, project_id, video_name, object_key = parse_message(message)
+                bucket_name, project_id, _, object_key = parse_message(message)
 
                 # TODO #1: Download videos from S3 bucket to local storage
                 s3_client = boto3.client('s3', region_name=AWS_REGION, aws_access_key_id=ACCESS_ID,
@@ -145,7 +145,7 @@ def main():
 
                 # TODO #2: Run inference
                 print("Running inference...")
-                res = run_inference(project_id, file_name, queries_file_name=None)
+                res = run_inference(project_id, file_name)
                 print("Inference done")
 
                 # TODO #5: Delete videos from S3 bucket and local storage
@@ -164,24 +164,23 @@ def main():
     logger.info('Done getting messages from SQS queue')
 
 
-def run_inference(project_id, file_name, queries_file_name):
+def run_inference(project_id, file_name):
     # load example data
     from utils.basic_utils import load_jsonl
     category = file_name.split('_')[1]
-
-    # video_path = "run_on_video/example/RoripwjYFp8_60.0_210.0.mp4"
+    print(f"Category: {category}")
     video_path = f"{file_name}"
 
-    # if category == 'lol':
-    #     query_path = "run_on_video/example/queries_lol.jsonl"
-    # else:
-    #     query_path = "run_on_video/example/queries_lifestyle.jsonl"
+    if category == 'lol':
+        query_path = "run_on_video/example/queries_lol.jsonl"
+        ckpt_path = "run_on_video/moment_detr_ckpt/model_best.ckpt"  # TODO: Change to lol ckpt
+    else:
+        query_path = "run_on_video/example/queries.jsonl"
+        ckpt_path = "run_on_video/moment_detr_ckpt/model_best.ckpt"
 
-    query_path = "run_on_video/example/queries.jsonl"
-    # query_path = f"{queries_file_name}"
     queries = load_jsonl(query_path)
     query_text_list = [e["query"] for e in queries]
-    ckpt_path = "run_on_video/moment_detr_ckpt/model_best.ckpt"
+
 
     # run predictions
     print("Build models...")
