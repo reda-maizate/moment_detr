@@ -282,7 +282,7 @@ def run_example():
     res = dict()
     project_id = "0dijsnkd12"
     # todo: find a way to store the results in a dict and push it to Redis
-    res[f"{project_id}:{video_path}"] = {}
+    # res[f"{project_id}:{video_path}"] = {}
     # res[f"{project_id}"]["video_path"] = video_path
     # res[f"{project_id}"]["query_list"] = query_text_list
     # res[f"{project_id}"]["predictions"] = predictions
@@ -298,7 +298,7 @@ def run_example():
         # print(f">> GT saliency scores (only localized 2-sec clips): {query_data['saliency_scores']}")
         # print(f">> Predicted saliency scores (for all 2-sec clip): "
         #       f"{predictions[idx]['pred_saliency_scores']}")
-        res[f"{project_id}:{video_path}"][f"{query_data['query']}"] = {
+        res[f"{project_id}:{video_path}:{query_data['query']}"] = {
             "pred_moments": predictions[idx]['pred_relevant_windows'],
             "pred_saliency_scores": predictions[idx]['pred_saliency_scores']
         }
