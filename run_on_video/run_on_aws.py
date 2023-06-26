@@ -272,27 +272,20 @@ def connect_and_push_to_redis(res, project_id, host, port, username, password):
 
     # d = {"query": "test", "result": "test"}
     # print(res)
-    key = res.keys()[0]
-    print("key:", key)
+    # key = res.keys()[0]
+    # print("key:", key)
 
-    value = str(res[key])
-    print("value:", value)
-    # for k, v in res.items():
-    #     print("key:", k)
-    #     for k1, v1 in v.items():
-    #         print(k1, v1)
-            # redis_cluster.hset(k, k1, v1)
-    redis_cluster.set(key, value)
-    # redis_cluster.hset('foo', mapping={"query": "test", "result": "test"})
-    print("Inserted data to Redis key: ", key, "with value: ", value)
+    # value = str(res[key])
+    # print("value:", value)
+    for k, v in res.items():
+        redis_cluster.delete(k)
+        redis_cluster.set(k, str(v))
+        print("Inserted data to Redis key: ", k, "with value: ", v)
 
     # Get the list of elements in the key 'foo'
-    print(f"Get from Redis key : {key}, the values : {redis_cluster.get(key)}")
-    # for k, v in values_from_my_key.items():
-    #     print(k, v)
-    #     logger.info(k, v)
-
-    redis_cluster.delete(key)  # TODO: Temporary delete for testing purposes
+    for k, v in res.items():
+        print(f"Get values from Redis key: {k}, with value: {redis_cluster.get(k)}")
+        redis_cluster.delete(k)  # TODO: Temporary delete for testing purposes
 
 
 if __name__ == "__main__":
