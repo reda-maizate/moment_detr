@@ -107,38 +107,20 @@ def main():
 
     # SQS Environment Variables
     # AWS_REGION = os.environ.get('AWS_REGION', 'us-east-1')
-    print(f'AWS region: {AWS_REGION}')
+    # print(f'AWS region: {AWS_REGION}')
     # SQS_QUEUE_NAME = os.environ.get('SQS_QUEUE_NAME')
-    print(f'SQS queue name: {SQS_QUEUE_NAME}')
+    # print(f'SQS queue name: {SQS_QUEUE_NAME}')
 
     # Redis Environment Variables
     # REDIS_HOST = os.environ.get('REDIS_HOST')
-    print(f'Redis host: {REDIS_HOST}')
+    # print(f'Redis host: {REDIS_HOST}')
     # REDIS_PORT = os.environ.get('REDIS_PORT', 6379)
-    print(f'Redis port: {REDIS_PORT}')
+    # print(f'Redis port: {REDIS_PORT}')
     # REDIS_USERNAME = os.environ.get('REDIS_USERNAME', "")
-    print(f'Redis username: {REDIS_USERNAME}')
+    # print(f'Redis username: {REDIS_USERNAME}')
     # REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD', "")
-    print(f'Redis password: {REDIS_PASSWORD}')
+    # print(f'Redis password: {REDIS_PASSWORD}')
 
-    # AWS Credentials
-    # role_info = {
-    #     'RoleArn': 'arn:aws:iam::406222022685:role/admin-access',
-    #     'RoleSessionName': 'current_session'
-    # }
-    # print(f'Access ID: {ACCESS_ID}')
-    # print(f'Access Key: {ACCESS_KEY}')
-    # sts_client = boto3.client('sts', region_name=AWS_REGION, aws_access_key_id=ACCESS_ID, aws_secret_access_key=ACCESS_KEY)
-    # assumed_role_object = sts_client.assume_role(**role_info)
-
-    # ACCESS_ID_2 = assumed_role_object['Credentials']['AccessKeyId']
-    # ACCESS_KEY_2 = assumed_role_object['Credentials']['SecretAccessKey']
-    # SESSION_TOKEN = assumed_role_object['Credentials']['SessionToken']
-    # Get the service resource
-    # session = boto3.session.Session(aws_access_key_id=ACCESS_ID_2, aws_secret_access_key=ACCESS_KEY_2,
-    #                                 aws_session_token=SESSION_TOKEN)
-
-    # sqs = session.client('sqs', region_name=AWS_REGION, aws_access_key_id=ACCESS_ID_2, aws_secret_access_key=ACCESS_KEY_2)
     sqs = boto3.resource('sqs', region_name=AWS_REGION)
 
     # Get the queue
@@ -154,102 +136,23 @@ def main():
             messages = queue.receive_messages(MessageAttributeNames=['All'], MaxNumberOfMessages=1, WaitTimeSeconds=5)
             counter = 0
             for message in messages:
-                print('Consuming a message...')
-                logger.info('Consuming a message...')
-                # print("--------------------")
-                # logger.info("--------------------")
-                payload = json.loads(message.body)
-                print(f'Payload: {payload}')
-                logger.info(f'Payload: {payload}')
-                bucket_name = payload.get('Records')[0].get('s3').get('bucket').get('name')
-                print(f'Bucket name: {bucket_name}')
-                logger.info(f'Bucket name: {bucket_name}')
-                object_key = payload.get('Records')[0].get('s3').get('object').get('key')
-                print(f'Object key: {object_key}')
-                logger.info(f'Object key: {object_key}')
-                message.delete()
+                bucket_name, object_key = parse_message(message)
 
                 # TODO #1: Download videos from S3 bucket to local storage
                 s3_client = boto3.client('s3', region_name=AWS_REGION, aws_access_key_id=ACCESS_ID,
                                          aws_secret_access_key=ACCESS_KEY)
-                file_name = object_key.split('/')[-1]
-
-                try:
-                    s3_client.download_file(bucket_name, object_key, file_name)
-                except Exception as e:
-                    print("Error during download")
-                    logger.error("Error during download")
-                    print(e)
-                    logger.error(e)
-
-                print(f'Downloaded {object_key} from {bucket_name} to {file_name}')
-                logger.info(f'Downloaded {object_key} from {bucket_name} to {file_name}')
-                # print(f"Local files: {os.listdir()}")
-                # logger.info(f'Local files: {os.listdir()}')
+                file_name = download_video_from_bucket(s3_client, bucket_name, object_key)
 
                 # TODO #2: Run inference
                 print("Running inference...")
-                res = run_example()
+                res = run_inference(file_name, queries_file_name=None)
                 print("Inference done")
-                # TODO #5: Delete videos from S3 bucket and local storage
-                try:
-                    os.remove(file_name)
-                except Exception as e:
-                    print("Error during local deletion")
-                    logger.error("Error during local deletion")
-                    print(e)
-                    logger.error(e)
 
-                try:
-                    s3_client.delete_object(Bucket=bucket_name, Key=object_key)
-                except Exception as e:
-                    print("Error during S3 deletion")
-                    logger.error("Error during S3 deletion")
-                    print(e)
-                    logger.error(e)
-                print(f'Deleted {object_key} from {bucket_name} and {file_name}')
-                logger.info(f'Deleted {object_key} from {bucket_name} and {file_name}')
+                # TODO #5: Delete videos from S3 bucket and local storage
+                delete_video_in_bucket_and_locally(s3_client, bucket_name, object_key, file_name)
 
                 # TODO #3: Push data to AWS ElastiCache (Redis) instance
-                # logger.info("REDIS_HOST: " + REDIS_HOST)
-                # print("REDIS_HOST: ", REDIS_HOST)
-                # logger.info("REDIS_PORT: " + REDIS_PORT)
-                # print("REDIS_PORT: ", REDIS_PORT)
-                # logger.info("REDIS_USERNAME: " + REDIS_USERNAME)
-                # print("REDIS_USERNAME: ", REDIS_USERNAME)
-                # logger.info("REDIS_PASSWORD: " + REDIS_PASSWORD)
-                # print("REDIS_PASSWORD: ", REDIS_PASSWORD)
-
-                redis_cluster = RedisCluster(host=REDIS_HOST, port=REDIS_PORT, username=REDIS_USERNAME,
-                                             password=REDIS_PASSWORD, decode_responses=True,
-                                             skip_full_coverage_check=True, ssl=True)
-                # TODO: Test avec RedisCluster bg
-                if redis_cluster.ping():
-                    print('Connected to Redis')
-                    logger.info('Connected to Redis')
-                else:
-                    print('Could not connect to Redis')
-                    logger.info('Could not connect to Redis')
-
-                # TODO #4: Push data to AWS ElastiCache (Redis) cluster
-                # Push list of elements in the key 'foo'
-                key = f'project_id:{counter}'
-                redis_cluster.delete(key)
-
-                # d = {"query": "test", "result": "test"}
-                for k, v in res.items():
-                    redis_cluster.hset(key, k, v)
-                # redis_cluster.hset('foo', mapping={"query": "test", "result": "test"})
-                print("Pushed data to Redis")
-                logger.info("Pushed data to Redis")
-                # Get the list of elements in the key 'foo'
-
-                values_from_my_key = redis_cluster.hgetall(key)
-                for k, v in values_from_my_key.items():
-                    print(k, v)
-                    logger.info(k, v)
-
-                redis_cluster.delete(key)  # TODO: Temporary delete for testing purposes
+                connect_and_push_to_redis(res, REDIS_HOST, REDIS_PORT, REDIS_USERNAME, REDIS_PASSWORD)
                 counter += 1
 
         except Exception as e:
@@ -261,11 +164,13 @@ def main():
     logger.info('Done getting messages from SQS queue')
 
 
-def run_example():
+def run_inference(file_name, queries_file_name):
     # load example data
     from utils.basic_utils import load_jsonl
     video_path = "run_on_video/example/RoripwjYFp8_60.0_210.0.mp4"
+    # video_path = f"run_on_video/example/{file_name}"
     query_path = "run_on_video/example/queries.jsonl"
+    # query_path = f"run_on_video/example/{queries_file_name}"
     queries = load_jsonl(query_path)
     query_text_list = [e["query"] for e in queries]
     ckpt_path = "run_on_video/moment_detr_ckpt/model_best.ckpt"
@@ -281,29 +186,98 @@ def run_example():
 
     res = dict()
     project_id = "0dijsnkd12"
-    # todo: find a way to store the results in a dict and push it to Redis
-    # res[f"{project_id}:{video_path}"] = {}
-    # res[f"{project_id}"]["video_path"] = video_path
-    # res[f"{project_id}"]["query_list"] = query_text_list
-    # res[f"{project_id}"]["predictions"] = predictions
 
-    # print data
     for idx, query_data in enumerate(queries):
-        # print("-" * 30 + f"idx{idx}")
-        # print(f">> query: {query_data['query']}")
-        # print(f">> video_path: {video_path}")
-        # print(f">> GT moments: {query_data['relevant_windows']}")
-        # print(f">> Predicted moments ([start_in_seconds, end_in_seconds, score]): "
-        #       f"{predictions[idx]['pred_relevant_windows']}")
-        # print(f">> GT saliency scores (only localized 2-sec clips): {query_data['saliency_scores']}")
-        # print(f">> Predicted saliency scores (for all 2-sec clip): "
-        #       f"{predictions[idx]['pred_saliency_scores']}")
-        res[f"{project_id}:{video_path}:{query_data['query']}"] = {
+        res[f"{project_id}:{video_path.split('/')[-1]}:{query_data['query']}"] = {
             "pred_moments": predictions[idx]['pred_relevant_windows'],
-            "pred_saliency_scores": predictions[idx]['pred_saliency_scores']
-        }
+            "pred_saliency_scores": predictions[idx]['pred_saliency_scores']}
     print(res)
     return res
+
+
+def parse_message(message):
+    print('Consuming a message...')
+    # print("--------------------")g
+    # logger.info("--------------------")
+    payload = json.loads(message.body)
+    print(f'Payload: {payload}')
+    bucket_name = payload.get('Records')[0].get('s3').get('bucket').get('name')
+    print(f'Bucket name: {bucket_name}')
+    object_key = payload.get('Records')[0].get('s3').get('object').get('key')
+    print(f'Object key: {object_key}')
+    message.delete()
+    return bucket_name, object_key
+
+
+def download_video_from_bucket(s3_client, bucket_name, object_key):
+    file_name = object_key.split('/')[-1]
+
+    try:
+        s3_client.download_file(bucket_name, object_key, file_name)
+    except Exception as e:
+        print("Error during download")
+        print(e)
+
+    print(f'Downloaded {object_key} from {bucket_name} to {file_name}')
+    return file_name
+
+
+def delete_video_in_bucket_and_locally(s3_client, bucket_name, object_key, file_name):
+    try:
+        os.remove(file_name)
+    except Exception as e:
+        print("Error during local deletion")
+        print(e)
+
+    try:
+        s3_client.delete_object(Bucket=bucket_name, Key=object_key)
+    except Exception as e:
+        print("Error during S3 deletion")
+        print(e)
+
+    print(f'Deleted {object_key} from {bucket_name} and {file_name}')
+
+
+def connect_and_push_to_redis(res, host, port, username, password):
+    # logger.info("REDIS_HOST: " + REDIS_HOST)
+    # print("REDIS_HOST: ", REDIS_HOST)
+    # logger.info("REDIS_PORT: " + REDIS_PORT)
+    # print("REDIS_PORT: ", REDIS_PORT)
+    # logger.info("REDIS_USERNAME: " + REDIS_USERNAME)
+    # print("REDIS_USERNAME: ", REDIS_USERNAME)
+    # logger.info("REDIS_PASSWORD: " + REDIS_PASSWORD)
+    # print("REDIS_PASSWORD: ", REDIS_PASSWORD)
+
+    redis_cluster = RedisCluster(host=host, port=port, username=username,
+                                 password=password, decode_responses=True,
+                                 skip_full_coverage_check=True, ssl=True)
+    # TODO: Test avec RedisCluster bg
+    if redis_cluster.ping():
+        print('Connected to Redis')
+    else:
+        print('Could not connect to Redis')
+
+    # TODO #4: Push data to AWS ElastiCache (Redis) cluster
+    # Push list of elements in the key 'foo'
+    # key = f'project_id:{counter}'
+    key = res.keys()[0]
+    print(f"Key for redis: {key}")
+    # redis_cluster.delete(key)
+
+    # d = {"query": "test", "result": "test"}
+    for k, v in res.items():
+        print(k, v)
+        # redis_cluster.hset(key, k, v)
+    # redis_cluster.hset('foo', mapping={"query": "test", "result": "test"})
+    print("Pushed data to Redis")
+    # Get the list of elements in the key 'foo'
+
+    # values_from_my_key = redis_cluster.hgetall(key)
+    # for k, v in values_from_my_key.items():
+    #     print(k, v)
+    #     logger.info(k, v)
+
+    # redis_cluster.delete(key)  # TODO: Temporary delete for testing purposes
 
 
 if __name__ == "__main__":
