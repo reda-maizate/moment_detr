@@ -264,7 +264,7 @@ def connect_and_push_to_redis(res, host, port, username, password):
     #4: Push data to AWS ElastiCache (Redis) cluster
     for k, v in res.items():
         redis_cluster.delete(k)
-        redis_cluster.set(k, str(v))
+        redis_cluster.set(k, str(v), ex=3600)
         print("Inserted data to Redis key: ", k, "with value: ", v)
 
     # Get the list of elements in the key 'foo'
