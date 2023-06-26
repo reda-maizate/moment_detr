@@ -172,7 +172,7 @@ def run_inference(project_id, file_name):
 
     if category == 'lol':
         query_path = "run_on_video/example/queries_lol.jsonl"
-        ckpt_path = "run_on_video/moment_detr_ckpt/model_best.ckpt"  # TODO: Change to lol ckpt
+        ckpt_path = "run_on_video/moment_detr_ckpt/model_best_lol.ckpt"
     else:
         query_path = "run_on_video/example/queries.jsonl"
         ckpt_path = "run_on_video/moment_detr_ckpt/model_best.ckpt"
