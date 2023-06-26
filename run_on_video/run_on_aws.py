@@ -167,8 +167,16 @@ def main():
 def run_inference(project_id, file_name, queries_file_name):
     # load example data
     from utils.basic_utils import load_jsonl
+    category = file_name.split('_')[1]
+
     # video_path = "run_on_video/example/RoripwjYFp8_60.0_210.0.mp4"
     video_path = f"{file_name}"
+
+    # if category == 'lol':
+    #     query_path = "run_on_video/example/queries_lol.jsonl"
+    # else:
+    #     query_path = "run_on_video/example/queries_lifestyle.jsonl"
+
     query_path = "run_on_video/example/queries.jsonl"
     # query_path = f"{queries_file_name}"
     queries = load_jsonl(query_path)
