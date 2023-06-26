@@ -265,7 +265,9 @@ def connect_and_push_to_redis(res, project_id, host, port, username, password):
     # redis_cluster.delete(key)
 
     # d = {"query": "test", "result": "test"}
+    # print(res)
     for k, v in res.items():
+        print("key:", k)
         for k1, v1 in v.items():
             print(k1, v1)
             # redis_cluster.hset(k, k1, v1)
