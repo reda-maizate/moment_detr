@@ -135,32 +135,33 @@ def main():
         try:
             messages = queue.receive_messages(MessageAttributeNames=['All'], MaxNumberOfMessages=1, WaitTimeSeconds=5)
             for message in messages:
-                bucket_name, project_id, _, object_key = parse_message(message)
+                bucket_name, project_id, object_key = parse_message(message)
 
-                # TODO #1: Download videos from S3 bucket to local storage
+                if bucket_name is None and project_id is None and object_key is None:
+                    continue
+
+                #1: Download videos from S3 bucket to local storage
                 s3_client = boto3.client('s3', region_name=AWS_REGION, aws_access_key_id=ACCESS_ID,
                                          aws_secret_access_key=ACCESS_KEY)
                 file_name = download_video_from_bucket(s3_client, bucket_name, object_key)
 
-                # TODO #2: Run inference
+                #2: Run inference
                 print("Running inference...")
                 res = run_inference(project_id, file_name)
                 print("Inference done")
 
-                # TODO #5: Delete videos from S3 bucket and local storage
+                #3: Delete videos from S3 bucket and local storage
                 delete_video_in_bucket_and_locally(s3_client, bucket_name, object_key, file_name)
 
-                # TODO #3: Push data to AWS ElastiCache (Redis) instance
+                #4: Push data to AWS MemoryDB (Redis) instance
                 connect_and_push_to_redis(res, project_id, REDIS_HOST, REDIS_PORT, REDIS_USERNAME, REDIS_PASSWORD)
                 print("------------------------------------")
 
         except Exception as e:
-            logger.error(f"Error in message consuming: {e}")
             print(f"Error in message consuming: {e}")
             continue
 
     print('Done getting messages from SQS queue')
-    logger.info('Done getting messages from SQS queue')
 
 
 def run_inference(project_id, file_name):
@@ -202,9 +203,9 @@ def run_inference(project_id, file_name):
 
 def parse_message(message):
     print('Consuming a message...')
-    # print("--------------------")g
-    # logger.info("--------------------")
     payload = json.loads(message.body)
+    if payload.get('Event', None) is not None:
+        return None, None, None, None
     print(f'Payload: {payload}')
     bucket_name = payload.get('Records')[0].get('s3').get('bucket').get('name')
     print(f'Bucket name: {bucket_name}')
@@ -212,7 +213,7 @@ def parse_message(message):
     project_id, video_name = object_key.split('/')
     print(f'Project id: {project_id}, video name: {video_name}, object key: {object_key}')
     message.delete()
-    return bucket_name, project_id, video_name, object_key
+    return bucket_name, project_id, object_key
 
 
 def download_video_from_bucket(s3_client, bucket_name, object_key):
@@ -264,30 +265,31 @@ def connect_and_push_to_redis(res, project_id, host, port, username, password):
         print('Could not connect to Redis')
 
     # TODO #4: Push data to AWS ElastiCache (Redis) cluster
-    # Push list of elements in the key 'foo'
-    # key = f'project_id:{counter}'
-    key = project_id
-    print(f"Key for redis: {key}")
     # redis_cluster.delete(key)
 
     # d = {"query": "test", "result": "test"}
     # print(res)
-    for k, v in res.items():
-        print("key:", k)
-        for k1, v1 in v.items():
-            print(k1, v1)
-            # redis_cluster.hset(k, k1, v1)
-        # redis_cluster.hset(key, k, v)
-    # redis_cluster.hset('foo', mapping={"query": "test", "result": "test"})
-    print("Pushed data to Redis")
-    # Get the list of elements in the key 'foo'
+    key = res.keys()[0]
+    print("key:", key)
 
-    # values_from_my_key = redis_cluster.hgetall(key)
+    value = str(res[key])
+    print("value:", value)
+    # for k, v in res.items():
+    #     print("key:", k)
+    #     for k1, v1 in v.items():
+    #         print(k1, v1)
+            # redis_cluster.hset(k, k1, v1)
+    redis_cluster.set(key, value)
+    # redis_cluster.hset('foo', mapping={"query": "test", "result": "test"})
+    print("Inserted data to Redis key: ", key, "with value: ", value)
+
+    # Get the list of elements in the key 'foo'
+    print(f"Get from Redis key : {key}, the values : {redis_cluster.get(key)}")
     # for k, v in values_from_my_key.items():
     #     print(k, v)
     #     logger.info(k, v)
 
-    # redis_cluster.delete(key)  # TODO: Temporary delete for testing purposes
+    redis_cluster.delete(key)  # TODO: Temporary delete for testing purposes
 
 
 if __name__ == "__main__":
