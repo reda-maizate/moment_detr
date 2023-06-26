@@ -202,18 +202,19 @@ def run_inference(project_id, file_name):
 
 
 def parse_message(message):
-    print('Consuming a message...')
     payload = json.loads(message.body)
 
     if payload.get('Event', None) is not None:
         return None, None, None
-
-    print(f'Payload: {payload}')
+    print('Detected an insertion in Splitted S3 bucket...')
+    # print(f'Payload: {payload}')
     bucket_name = payload.get('Records')[0].get('s3').get('bucket').get('name')
     print(f'Bucket name: {bucket_name}')
+
     object_key = payload.get('Records')[0].get('s3').get('object').get('key')
     project_id, video_name = object_key.split('/')
     print(f'Project id: {project_id}, video name: {video_name}, object key: {object_key}')
+
     message.delete()
     return bucket_name, project_id, object_key
 
