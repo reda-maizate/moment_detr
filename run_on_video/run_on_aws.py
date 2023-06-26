@@ -204,8 +204,10 @@ def run_inference(project_id, file_name):
 def parse_message(message):
     print('Consuming a message...')
     payload = json.loads(message.body)
+
     if payload.get('Event', None) is not None:
-        return None, None, None, None
+        return None, None, None
+
     print(f'Payload: {payload}')
     bucket_name = payload.get('Records')[0].get('s3').get('bucket').get('name')
     print(f'Bucket name: {bucket_name}')
