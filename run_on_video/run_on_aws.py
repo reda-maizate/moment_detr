@@ -136,7 +136,7 @@ def main():
             messages = queue.receive_messages(MessageAttributeNames=['All'], MaxNumberOfMessages=1, WaitTimeSeconds=5)
             counter = 0
             for message in messages:
-                bucket_name, object_key = parse_message(message)
+                bucket_name, project_id, video_name, object_key = parse_message(message)
 
                 # TODO #1: Download videos from S3 bucket to local storage
                 s3_client = boto3.client('s3', region_name=AWS_REGION, aws_access_key_id=ACCESS_ID,
@@ -152,7 +152,7 @@ def main():
                 delete_video_in_bucket_and_locally(s3_client, bucket_name, object_key, file_name)
 
                 # TODO #3: Push data to AWS ElastiCache (Redis) instance
-                connect_and_push_to_redis(res, REDIS_HOST, REDIS_PORT, REDIS_USERNAME, REDIS_PASSWORD)
+                connect_and_push_to_redis(res, project_id, REDIS_HOST, REDIS_PORT, REDIS_USERNAME, REDIS_PASSWORD)
                 counter += 1
 
         except Exception as e:
@@ -204,9 +204,10 @@ def parse_message(message):
     bucket_name = payload.get('Records')[0].get('s3').get('bucket').get('name')
     print(f'Bucket name: {bucket_name}')
     object_key = payload.get('Records')[0].get('s3').get('object').get('key')
-    print(f'Object key: {object_key}')
+    project_id, video_name = object_key.split('/')
+    print(f'Project id: {project_id}, video name: {video_name}, object key: {object_key}')
     message.delete()
-    return bucket_name, object_key
+    return bucket_name, project_id, video_name, object_key
 
 
 def download_video_from_bucket(s3_client, bucket_name, object_key):
@@ -238,7 +239,7 @@ def delete_video_in_bucket_and_locally(s3_client, bucket_name, object_key, file_
     print(f'Deleted {object_key} from {bucket_name} and {file_name}')
 
 
-def connect_and_push_to_redis(res, host, port, username, password):
+def connect_and_push_to_redis(res, project_id, host, port, username, password):
     # logger.info("REDIS_HOST: " + REDIS_HOST)
     # print("REDIS_HOST: ", REDIS_HOST)
     # logger.info("REDIS_PORT: " + REDIS_PORT)
@@ -260,7 +261,7 @@ def connect_and_push_to_redis(res, host, port, username, password):
     # TODO #4: Push data to AWS ElastiCache (Redis) cluster
     # Push list of elements in the key 'foo'
     # key = f'project_id:{counter}'
-    key = res.keys()[0]
+    key = project_id
     print(f"Key for redis: {key}")
     # redis_cluster.delete(key)
 
