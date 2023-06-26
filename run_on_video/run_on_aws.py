@@ -285,7 +285,7 @@ def connect_and_push_to_redis(res, project_id, host, port, username, password):
     # Get the list of elements in the key 'foo'
     for k, v in res.items():
         print(f"Get values from Redis key: {k}, with value: {redis_cluster.get(k)}")
-        redis_cluster.delete(k)  # TODO: Temporary delete for testing purposes
+        # redis_cluster.delete(k)  # TODO: Temporary delete for testing purposes
 
 
 if __name__ == "__main__":
