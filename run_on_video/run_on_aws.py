@@ -134,7 +134,6 @@ def main():
         #     break
         try:
             messages = queue.receive_messages(MessageAttributeNames=['All'], MaxNumberOfMessages=1, WaitTimeSeconds=5)
-            counter = 0
             for message in messages:
                 bucket_name, project_id, _, object_key = parse_message(message)
 
@@ -153,7 +152,7 @@ def main():
 
                 # TODO #3: Push data to AWS ElastiCache (Redis) instance
                 connect_and_push_to_redis(res, project_id, REDIS_HOST, REDIS_PORT, REDIS_USERNAME, REDIS_PASSWORD)
-                counter += 1
+                print("------------------------------------")
 
         except Exception as e:
             logger.error(f"Error in message consuming: {e}")
