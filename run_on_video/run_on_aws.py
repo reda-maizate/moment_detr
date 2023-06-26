@@ -145,7 +145,7 @@ def main():
 
                 # TODO #2: Run inference
                 print("Running inference...")
-                res = run_inference(file_name, queries_file_name=None)
+                res = run_inference(project_id, file_name, queries_file_name=None)
                 print("Inference done")
 
                 # TODO #5: Delete videos from S3 bucket and local storage
@@ -164,13 +164,13 @@ def main():
     logger.info('Done getting messages from SQS queue')
 
 
-def run_inference(file_name, queries_file_name):
+def run_inference(project_id, file_name, queries_file_name):
     # load example data
     from utils.basic_utils import load_jsonl
-    video_path = "run_on_video/example/RoripwjYFp8_60.0_210.0.mp4"
-    # video_path = f"run_on_video/example/{file_name}"
+    # video_path = "run_on_video/example/RoripwjYFp8_60.0_210.0.mp4"
+    video_path = f"{file_name}"
     query_path = "run_on_video/example/queries.jsonl"
-    # query_path = f"run_on_video/example/{queries_file_name}"
+    # query_path = f"{queries_file_name}"
     queries = load_jsonl(query_path)
     query_text_list = [e["query"] for e in queries]
     ckpt_path = "run_on_video/moment_detr_ckpt/model_best.ckpt"
@@ -185,7 +185,6 @@ def run_inference(file_name, queries_file_name):
     predictions = moment_detr_predictor.localize_moment(video_path=video_path, query_list=query_text_list)
 
     res = dict()
-    project_id = "0dijsnkd12"
 
     for idx, query_data in enumerate(queries):
         res[f"{project_id}:{video_path.split('/')[-1]}:{query_data['query']}"] = {
@@ -267,7 +266,9 @@ def connect_and_push_to_redis(res, project_id, host, port, username, password):
 
     # d = {"query": "test", "result": "test"}
     for k, v in res.items():
-        print(k, v)
+        for k1, v1 in v.items():
+            print(k1, v1)
+            # redis_cluster.hset(k, k1, v1)
         # redis_cluster.hset(key, k, v)
     # redis_cluster.hset('foo', mapping={"query": "test", "result": "test"})
     print("Pushed data to Redis")
