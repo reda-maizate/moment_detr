@@ -240,17 +240,17 @@ def download_video_from_bucket(s3_client, bucket_name, object_key):
 
 
 def delete_video_in_bucket_and_locally(s3_client, bucket_name, object_key, file_name):
-    # try:
-    #     os.remove(file_name)
-    # except Exception as e:
-    #     print("Error during local deletion")
-    #     print(e)
-
     try:
-        s3_client.delete_object(Bucket=bucket_name, Key=object_key)
+        os.remove(file_name)
     except Exception as e:
-        print("Error during S3 deletion")
+        print("Error during local deletion")
         print(e)
+
+    # try:
+    #     s3_client.delete_object(Bucket=bucket_name, Key=object_key)
+    # except Exception as e:
+    #     print("Error during S3 deletion")
+    #     print(e)
 
     print(f'Deleted {object_key} from {bucket_name} and {file_name}')
 
