@@ -4,6 +4,7 @@ from run_on_video.data_utils import ClipFeatureExtractor
 from run_on_video.model_utils import build_inference_model
 from utils.tensor_utils import pad_sequences_1d
 from moment_detr.span_utils import span_cxw_to_xx
+from pprint import pprint
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -194,14 +195,17 @@ def run_inference(project_id, file_name):
     print("Run prediction...")
     predictions = moment_detr_predictor.localize_moment(video_path=video_path, query_list=query_text_list)
 
-    res = dict()
+    list_of_results = []
 
     for idx, query_data in enumerate(queries):
+        res = {}
         res[f"{project_id}:{video_path.split('/')[-1]}:{query_data['query']}"] = {
             "pred_moments": predictions[idx]['pred_relevant_windows'],
             "pred_saliency_scores": predictions[idx]['pred_saliency_scores']}
-    print(res)
-    return res
+        list_of_results.append(res)
+
+    pprint(list_of_results)
+    return list_of_results
 
 
 def parse_message(message):
