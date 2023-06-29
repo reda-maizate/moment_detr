@@ -139,6 +139,7 @@ def main():
         try:
             messages = queue.receive_messages(MessageAttributeNames=['All'], MaxNumberOfMessages=1, WaitTimeSeconds=5)
             for message in messages:
+                print("Consuming message...")
                 bucket_name, project_id, object_key = parse_message(message)
 
                 if bucket_name is None and project_id is None and object_key is None:
