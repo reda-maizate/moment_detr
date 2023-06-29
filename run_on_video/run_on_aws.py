@@ -266,16 +266,19 @@ def connect_and_push_to_redis(res, host, port, username, password):
     else:
         print('Could not connect to Redis')
 
-    #4: Push data to AWS ElastiCache (Redis) cluster
-    for k, v in res.items():
-        redis_cluster.delete(k)
-        redis_cluster.set(k, str(v), ex=3600)
-        print("Inserted data to Redis key: ", k, "with value: ", v)
+    #4: Push data to AWS MemoryDB (Redis) cluster
+    for elm in res:
+        for k, v in elm.items():
+            redis_cluster.delete(k)
+            redis_cluster.set(k, str(v))
+            redis_cluster.expire(k, 3600)
+            print("Inserted data to Redis key: ", k, "with value: ", v)
 
     # Get the list of elements in the key 'foo'
-    for k, v in res.items():
-        print(f"Get values from Redis key: {k}, with value: {redis_cluster.get(k)}")
-        # redis_cluster.delete(k)  # TODO: Temporary delete for testing purposes
+    for elm in res:
+        for k, v in elm.items():
+            print(f"Get values from Redis key: {k}, with value: {redis_cluster.get(k)}")
+            # redis_cluster.delete(k)  # TODO: Temporary delete for testing purposes
 
 
 if __name__ == "__main__":
